@@ -2,6 +2,9 @@
 Changelog for package ridgeback_navigation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.3.4 (2023-06-15)
 ------------------
 

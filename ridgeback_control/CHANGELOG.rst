@@ -2,6 +2,16 @@
 Changelog for package ridgeback_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Reduce turbo gains
+  Reduce gains to be the same as non-turbo levels. This way holding either button will allow the robot to drive, but without the safety concerns about a fully-loaded payload moving at full speed.
+* Add teleop turbo support
+  We define a turbo button, but don't actually set the gains; this means pressing B5 uses the default 0.0 multiplier, causing the robot to stop.
+  This MR adds 1.1x multipliers to the linear speed (maximum advertised speed is 1.1m/s) but keeps the same angular maximum.
+  Tested on an integration project prior to shipping (and then reverted). Integration reports it worked as expected.
+* Contributors: Chris Iverach-Brereton
+
 0.3.4 (2023-06-15)
 ------------------
 
