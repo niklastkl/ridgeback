@@ -6,9 +6,14 @@ teleop_twist_joy:
   scale_linear:
     x: 0.4
     y: 0.4
+  scale_linear_turbo:
+    x: 0.4
+    y: 0.4
   axis_angular:
     yaw: 3
   scale_angular:
+    yaw: 0.5
+  scale_angular_turbo:
     yaw: 0.5
   enable_button: 4
   enable_turbo_button: 5
