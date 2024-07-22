@@ -2,8 +2,8 @@
 Changelog for package ridgeback_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.5 (2024-07-22)
+------------------
 * Reduce turbo gains
   Reduce gains to be the same as non-turbo levels. This way holding either button will allow the robot to drive, but without the safety concerns about a fully-loaded payload moving at full speed.
 * Add teleop turbo support
