@@ -79,15 +79,26 @@ public:
   void init(const ros::Time &time);
 
   /**
-   * \brief Updates the odometry class with latest wheels position
-   * \param wheel0_vel  Wheel velocity [rad]
-   * \param wheel1_vel  Wheel velocity [rad]
-   * \param wheel2_vel  Wheel velocity [rad]
-   * \param wheel3_vel  Wheel velocity [rad]
+   * \brief Updates the odometry class with current joint velocities
+   * \param wheel0_vel  Wheel velocity [rad/s]
+   * \param wheel1_vel  Wheel velocity [rad/s]
+   * \param wheel2_vel  Wheel velocity [rad/s]
+   * \param wheel3_vel  Wheel velocity [rad/s]
    * \param time      Current time
    * \return true if the odometry is actually updated
    */
-  bool update(double wheel0_vel, double wheel1_vel, double wheel2_vel, double wheel3_vel, const ros::Time &time);
+  bool updateFromVel(double wheel0_vel, double wheel1_vel, double wheel2_vel, double wheel3_vel, const ros::Time &time);
+
+  /**
+   * \brief Updates the odometry class with latest wheels position
+   * \param wheel0_pos  Wheel position [rad]
+   * \param wheel1_pos  Wheel position [rad]
+   * \param wheel2_pos  Wheel position [rad]
+   * \param wheel3_pos  Wheel position [rad]
+   * \param time      Current time
+   * \return true if the odometry is actually updated
+   */
+  bool updateFromPos(double wheel0_pos, double wheel1_pos, double wheel2_pos, double wheel3_pos, const ros::Time &time);
 
   /**
    * \brief Updates the odometry class with latest velocity command
@@ -172,6 +183,8 @@ private:
    */
   void integrateExact(double linearX, double linearY, double angular);
 
+
+
   /// Current timestamp:
   ros::Time timestamp_;
 
@@ -188,6 +201,12 @@ private:
   /// Wheels kinematic parameters [m]:
   double wheels_k_;
   double wheels_radius_;
+
+  /// Storage for old positions of the wheel increments
+  double wheel0_old_pos_;
+  double wheel1_old_pos_;
+  double wheel2_old_pos_;
+  double wheel3_old_pos_;
 
   /// Rolling mean accumulators for the linar and angular velocities:
   size_t velocity_rolling_window_size_;

@@ -132,6 +132,8 @@ bool MecanumDriveController::init(hardware_interface::VelocityJointInterface* hw
 
   controller_nh.param("open_loop", open_loop_, open_loop_);
 
+  controller_nh.param("odom_from_vel", odom_from_vel_, true);
+
   // Twist command related:
   controller_nh.param("cmd_vel_timeout", cmd_vel_timeout_, cmd_vel_timeout_);
   ROS_INFO_STREAM_NAMED(name_, "Velocity commands will be considered old if they are older than "
@@ -196,16 +198,29 @@ void MecanumDriveController::update(const ros::Time& time, const ros::Duration& 
   }
   else
   {
-    double wheel0_vel = wheel0_jointHandle_.getVelocity();
-    double wheel1_vel = wheel1_jointHandle_.getVelocity();
-    double wheel2_vel = wheel2_jointHandle_.getVelocity();
-    double wheel3_vel = wheel3_jointHandle_.getVelocity();
+    if (odom_from_vel_){
+      const double wheel0_vel = wheel0_jointHandle_.getVelocity();
+      const double wheel1_vel = wheel1_jointHandle_.getVelocity();
+      const double wheel2_vel = wheel2_jointHandle_.getVelocity();
+      const double wheel3_vel = wheel3_jointHandle_.getVelocity();
 
-    if (std::isnan(wheel0_vel) || std::isnan(wheel1_vel) || std::isnan(wheel2_vel) || std::isnan(wheel3_vel))
-      return;
+      if (std::isnan(wheel0_vel) || std::isnan(wheel1_vel) || std::isnan(wheel2_vel) || std::isnan(wheel3_vel))
+        return;
 
-    // Estimate twist (using joint information) and integrate
-    odometry_.update(wheel0_vel, wheel1_vel, wheel2_vel, wheel3_vel, time);
+      // Estimate twist (using joint information) and integrate
+      odometry_.updateFromVel(wheel0_vel, wheel1_vel, wheel2_vel, wheel3_vel, time);
+    } else {
+      const double wheel0_pos = wheel0_jointHandle_.getPosition();
+      const double wheel1_pos = wheel1_jointHandle_.getPosition();
+      const double wheel2_pos = wheel2_jointHandle_.getPosition();
+      const double wheel3_pos = wheel3_jointHandle_.getPosition();
+
+      if (std::isnan(wheel0_pos) || std::isnan(wheel1_pos) || std::isnan(wheel2_pos) || std::isnan(wheel3_pos))
+        return;
+
+      // Estimate pose increment (using joint information) and integrate
+      odometry_.updateFromPos(wheel0_pos, wheel1_pos, wheel2_pos, wheel3_pos, time);
+    }
   }
 
   // Publish odometry message

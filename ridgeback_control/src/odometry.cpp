@@ -62,6 +62,10 @@ Odometry::Odometry(size_t velocity_rolling_window_size)
 , wheels_k_(0.0)
 , wheels_radius_(0.0)
 , velocity_rolling_window_size_(velocity_rolling_window_size)
+, wheel0_old_pos_(0.0)
+, wheel1_old_pos_(0.0)
+, wheel2_old_pos_(0.0)
+, wheel3_old_pos_(0.0)
 , linearX_acc_(RollingWindow::window_size = velocity_rolling_window_size)
 , linearY_acc_(RollingWindow::window_size = velocity_rolling_window_size)
 , angular_acc_(RollingWindow::window_size = velocity_rolling_window_size)
@@ -81,8 +85,50 @@ void Odometry::init(const ros::Time& time)
   timestamp_ = time;
 }
 
+bool Odometry::updateFromPos(double wheel0_pos, double wheel1_pos, double wheel2_pos, double wheel3_pos, const ros::Time &time)
+{
+  /// We cannot estimate the speed with very small time intervals:
+  const double dt = (time - timestamp_).toSec();
+  if (dt < 0.0001)  
+    return false; // Interval too small to integrate with  
+ 
+  timestamp_ = time;
+
+  // estimate velocity through numerical differentiation
+  const double wheel0_est_vel = (wheel0_pos - wheel0_old_pos_) / dt;
+  const double wheel1_est_vel = (wheel1_pos - wheel1_old_pos_) / dt;
+  const double wheel2_est_vel = (wheel2_pos - wheel2_old_pos_) / dt;
+  const double wheel3_est_vel = (wheel3_pos - wheel3_old_pos_) / dt;
+
+  // update last positions
+  wheel0_old_pos_ = wheel0_pos;
+  wheel1_old_pos_ = wheel1_pos;
+  wheel2_old_pos_ = wheel2_pos;
+  wheel3_old_pos_ = wheel3_pos;
+
+  const double linearX = 0.25 * wheels_radius_ *
+                            (wheel0_est_vel + wheel1_est_vel + wheel2_est_vel + wheel3_est_vel);
+  const double linearY = 0.25 * wheels_radius_ *
+                     (-wheel0_est_vel + wheel1_est_vel - wheel2_est_vel + wheel3_est_vel);
+  const double angular = 0.25 * wheels_radius_ / wheels_k_ *
+                     (-wheel0_est_vel - wheel1_est_vel + wheel2_est_vel + wheel3_est_vel);
+
+  /// Integrate odometry.
+  integrate_fun_(linearX*dt, linearY*dt, angular*dt);
+
+  linearX_acc_(linearX);
+  linearY_acc_(linearY);
+  angular_acc_(angular);
+
+  linearX_ = bacc::rolling_mean(linearX_acc_);
+  linearY_ = bacc::rolling_mean(linearY_acc_);
+  angular_ = bacc::rolling_mean(angular_acc_);
+
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Odometry::update(double wheel0_vel, double wheel1_vel, double wheel2_vel, double wheel3_vel, const ros::Time &time)
+bool Odometry::updateFromVel(double wheel0_vel, double wheel1_vel, double wheel2_vel, double wheel3_vel, const ros::Time &time)
 {
   /// We cannot estimate the speed with very small time intervals:
   const double dt = (time - timestamp_).toSec();

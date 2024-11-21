@@ -147,6 +147,9 @@ private:
   /// Whether to publish odometry to tf or not:
   bool enable_odom_tf_;
 
+  /// Decides whether the odometry is calculated from velocity or position
+  bool odom_from_vel_;
+
   /// Number of wheel joints:
   size_t wheel_joints_size_;
 
